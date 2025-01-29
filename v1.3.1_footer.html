@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Efficiency Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --secondary-gradient: linear-gradient(135deg, #f59e0b, #ef4444);
+            --border-radius: 0.5rem;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f3f4f6;
+            color: #333;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Page Wrapper to enable sticky behavior */
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensures full-page height */
+            width: 100%;
+            padding: 1rem;
+            margin-top: auto;
+        }
+
+        .container {
+            background-color: #2D3748;
+            padding: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            flex: 1;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--primary-gradient);
+            color: #fff;
+            border-radius: var(--border-radius);
+        }
+        /* Dark Footer */
+        .footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            width: 100%;
+            padding: 1rem;
+            margin-top: auto;
+        }
+        /* Footer Content */
+        .footer-content {
+            max-width: 1024px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0.5rem;
+        }
+        
+        .footer-copyright {
+            font-size: 0.875rem;
+        }
+
+        .footer nav {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: #A0AEC0; /* Tailwind text-gray-400 */
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #E2E8F0; /* Lighter hover effect */
+        }
+      
+        @media (max-width: 640px) {
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-nav {
+                justify-content: center;
+                gap: 1rem;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--primary-gradient);
+            color: #fff;
+            border-radius: var(--border-radius);
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+      .input-group.base-rates {
+            height: fit-content;
+            padding-bottom: 1rem;
+        }
+
+        .input-group h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+      
+        /* Remove bottom margin from last input in base-rates */
+        .input-group.base-rates input:last-of-type {
+            margin-bottom: 0;
+        }
+
+        button {
+            background: var(--secondary-gradient);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        button {
+            background: var(--secondary-gradient);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: opacity 0.2s ease-in-out;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        /* Responsive Grid Breakpoints */
+        @media (min-width: 768px) {
+            .input-section {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .results {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .metric {
+            background-color: #fff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: help;
+            position: relative;
+        }
+
+        .tooltip {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-width: 300px;
+        }
+
+        .good { color: green; }
+        .average { color: orange; }
+        .bad { color: red; }
+    </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="container ">
+        <div class="header">
+            <h1>Team Efficiency Analysis</h1>
+            <p>Compare MT and OD Team Models</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group base-rates">
+                <h3>Base Rates</h3>
+                <label for="mtRate">MT Rate (€/hour)</label>
+                <input type="number" id="mtRate" step="0.01" min="0.1" required>
+                <label for="spRate">Cost per SP (€)</label>
+                <input type="number" id="spRate" step="0.01" min="0.1" required>
+            </div>
+
+            <div class="input-group">
+                <h3>Lead Times (days)</h3>
+                <label for="lt1">SP 1</label>
+                <input type="number" id="lt1" step="0.1" min="0.1" required>
+                <label for="lt2">SP 2</label>
+                <input type="number" id="lt2" step="0.1" min="0.1" required>
+                <label for="lt3">SP 3</label>
+                <input type="number" id="lt3" step="0.1" min="0.1" required>
+                <label for="lt5">SP 5</label>
+                <input type="number" id="lt5" step="0.1" min="0.1" required>
+                <label for="lt8">SP 8</label>
+                <input type="number" id="lt8" step="0.1" min="0.1" required>
+                <label for="lt13">SP 13</label>
+                <input type="number" id="lt13" step="0.1" min="0.1" required>
+            </div>
+
+            <div class="input-group">
+                <h3>Cycle Times (days)</h3>
+                <label for="ct1">SP 1</label>
+                <input type="number" id="ct1" step="0.1" min="0.1" required>
+                <label for="ct2">SP 2</label>
+                <input type="number" id="ct2" step="0.1" min="0.1" required>
+                <label for="ct3">SP 3</label>
+                <input type="number" id="ct3" step="0.1" min="0.1" required>
+                <label for="ct5">SP 5</label>
+                <input type="number" id="ct5" step="0.1" min="0.1" required>
+                <label for="ct8">SP 8</label>
+                <input type="number" id="ct8" step="0.1" min="0.1" required>
+                <label for="ct13">SP 13</label>
+                <input type="number" id="ct13" step="0.1" min="0.1" required>
+            </div>
+        </div>
+
+        <button onclick="calculateMetrics()">Analyze</button>
+
+        <div id="tooltip" class="tooltip"></div>
+        <div id="results" class="results">
+            <h3>Analysis Results</h3>
+            <div id="correlation" class="metric" data-key="correlation">
+                <span class="metric-title">Correlation coefficient:</span>
+                <span class="value"></span>
+            </div>
+            <div id="ratioBySP" class="metric" data-key="ratioBySP"></div>
+            <div id="meanRatio" class="metric" data-key="meanRatio"></div>
+            <div id="stdDev" class="metric" data-key="stdDev"></div>
+            <div id="costComparisonBySP" class="metric" data-key="costComparison"></div>
+            <div id="totalCostComparison" class="metric" data-key="costComparison"></div>
+            <canvas id="correlationChart"></canvas>
+            <canvas id="costComparisonChart"></canvas>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <span class="footer-copyright">© 2025 Tiago Santiago | Open Source stuff only.</span>
+            <nav class="footer-nav">
+                <a href="https://www.linkedin.com/in/tiagosantiago">Linkedin</a>
+                <a href="mailto:tiagosantiago.decskill@edp.com">Contact me</a>
+            </nav>
+        </div>
+    </footer>
+ </div>
+
+    <script>
+        // Constants
+        const HOURS_PER_DAY = 8;
+        const SP_VALUES = [1, 2, 3, 5, 8, 13];
+        const IDEAL_RATIO = 0.25;
+        const CORRELATION_STRONG = 0.7;
+        const CORRELATION_MODERATE = 0.5;
+        const CONSISTENCY_HIGH = 0.05;
+        const CONSISTENCY_MODERATE = 0.1;
+
+        const TOOLTIPS = {
+            correlation: "Pearson correlation between Story Points and Cycle Time (range: -1 to 1)<br>" +
+                        "<strong>Interpretation:</strong><br>" +
+                        "≥ 0.7: Strong correlation (expected in well-estimated teams)<br>" +
+                        "0.5-0.7: Moderate correlation<br>" +
+                        "< 0.5: Weak correlation",
+            ratioBySP: "Cycle Time/Lead Time ratio for each Story Point size<br>" +
+                      "Consistent ratios across sizes indicate predictable delivery",
+            meanRatio: `Average ratio of Cycle Time to Lead Time across all SP sizes<br>
+                      <strong>Target:</strong> ${IDEAL_RATIO*100}% (based on internal IT standards)`,
+            stdDev: "Consistency of Cycle/Lead Time ratios across SP sizes<br>" +
+                   "<strong>Interpretation:</strong><br>" +
+                   "< 0.05: High consistency<br>" +
+                   "0.05-0.1: Moderate consistency<br>" +
+                   "> 0.1: Significant variability",
+            costComparison: "Cost comparison between Output-Driven (fixed cost per SP) and Managed Team (time-based cost) models"
+        };
+
+        let correlationChart = null;
+        let costChart = null;
+
+        /** 
+         * Calculates Pearson correlation coefficient
+         * @param {number[]} x - First data set
+         * @param {number[]} y - Second data set
+         * @returns {number} Correlation coefficient
+         */
+        function calculateCorrelation(x, y) {
+            const n = x.length;
+            const sum1 = x.reduce((a, b) => a + b, 0);
+            const sum2 = y.reduce((a, b) => a + b, 0);
+            const sum1Sq = x.reduce((a, b) => a + b * b, 0);
+            const sum2Sq = y.reduce((a, b) => a + b * b, 0);
+            const pSum = x.map((el, i) => el * y[i]).reduce((a, b) => a + b, 0);
+            const num = pSum - (sum1 * sum2 / n);
+            const den = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n));
+            return den !== 0 ? num / den : 0;
+        }
+
+        /** Calculates standard deviation of values */
+        function calculateStdDev(values, mean) {
+            const variance = values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / values.length;
+            return Math.sqrt(variance);
+        }
+
+        function showTooltip(event, key) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = TOOLTIPS[key];
+            tooltip.style.display = 'block';
+            
+            const x = Math.min(event.pageX, window.innerWidth - 320);
+            const y = Math.min(event.pageY, window.innerHeight - 200);
+            
+            tooltip.style.left = `${x + 10}px`;
+            tooltip.style.top = `${y + 10}px`;
+        }
+
+        // Tooltip event handlers
+        document.querySelectorAll('.metric').forEach(metric => {
+            metric.addEventListener('mousemove', (e) => showTooltip(e, metric.dataset.key));
+            metric.addEventListener('mouseleave', () => {
+                document.getElementById('tooltip').style.display = 'none';
+            });
+        });
+
+        function createCorrelationChart(cycleTimes) {
+            if (correlationChart) correlationChart.destroy();
+            
+            const ctx = document.getElementById('correlationChart').getContext('2d');
+            correlationChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'SP vs Cycle Time',
+                        data: SP_VALUES.map((sp, i) => ({ x: sp, y: cycleTimes[i] })),
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Story Points vs Cycle Time Correlation'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Story Points' },
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return SP_VALUES.includes(value) ? value : null;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Cycle Time (days)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCostChart(odCosts, mtCosts) {
+            if (costChart) costChart.destroy();
+            
+            const ctx = document.getElementById('costComparisonChart').getContext('2d');
+            costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: SP_VALUES.map(sp => `${sp}SP`),
+                    datasets: [{
+                        label: 'OD Model',
+                        data: odCosts,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                    }, {
+                        label: 'MT Model',
+                        data: mtCosts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Cost Comparison by Story Points'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Cost (€)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculateMetrics() {
+            // Input validation
+            const inputs = [...document.querySelectorAll('input[type="number"]')];
+            if (inputs.some(input => input.value <= 0)) {
+                alert("All values must be greater than zero");
+                return;
+            }
+
+            // Get input values
+            const leadTimes = SP_VALUES.map(sp => Number(document.getElementById(`lt${sp}`).value));
+            const cycleTimes = SP_VALUES.map(sp => Number(document.getElementById(`ct${sp}`).value));
+            const mtRate = Number(document.getElementById('mtRate').value);
+            const spRate = Number(document.getElementById('spRate').value);
+
+            // Calculate metrics
+            const correlation = calculateCorrelation(SP_VALUES, cycleTimes);
+            const ratios = cycleTimes.map((ct, i) => ct / leadTimes[i]);
+            const meanRatio = ratios.reduce((a, b) => a + b) / ratios.length;
+            const stdDev = calculateStdDev(ratios, meanRatio);
+
+            // Cost calculations
+            const odCosts = SP_VALUES.map(sp => sp * spRate);
+            const mtCosts = cycleTimes.map(ct => ct * HOURS_PER_DAY * mtRate);
+            const totalODCost = odCosts.reduce((a, b) => a + b, 0);
+            const totalMTCost = mtCosts.reduce((a, b) => a + b, 0);
+
+            // Update results display
+            document.getElementById('correlation').className = 
+                correlation >= CORRELATION_STRONG ? 'good' : 
+                correlation >= CORRELATION_MODERATE ? 'average' : 'bad';
+            document.getElementById('correlation').querySelector('.value').textContent = correlation.toFixed(3);
+
+            document.getElementById('ratioBySP').innerHTML = `
+                <span class="metric-title">Cycle/Lead Time Ratios by SP:</span><br>
+                ${SP_VALUES.map((sp, i) => `${sp}SP: ${(ratios[i] * 100).toFixed(1)}%`).join('<br>')}`;
+
+            document.getElementById('meanRatio').innerHTML = `
+                <span class="metric-title">Mean Cycle/Lead Time Ratio:</span>
+                <span class="${Math.abs(meanRatio - IDEAL_RATIO) <= 0.1 ? 'good' : 'bad'}">
+                    ${(meanRatio * 100).toFixed(1)}%
+                </span>`;
+
+            document.getElementById('stdDev').innerHTML = `
+                <span class="metric-title">Consistency (Std Dev):</span>
+                ${stdDev.toFixed(3)}<br>
+                ${stdDev < CONSISTENCY_HIGH ? 'High consistency' :
+                  stdDev < CONSISTENCY_MODERATE ? 'Moderate consistency' : 'Significant variability'}`;
+
+            document.getElementById('costComparisonBySP').innerHTML = `
+                <span class="metric-title">Cost Comparison by SP:</span><br>
+                ${SP_VALUES.map((sp, i) => `
+                    ${sp}SP: OD €${odCosts[i].toFixed(2)} vs MT €${mtCosts[i].toFixed(2)}
+                `).join('<br>')}`;
+
+            const diff = totalMTCost - totalODCost;
+            const cheaperModel = diff > 0 ? "OD" : "MT";
+            document.getElementById('totalCostComparison').innerHTML = `
+                <span class="metric-title">Total Cost Comparison:</span><br>
+                OD Model: €${totalODCost.toFixed(2)}<br>
+                MT Model: €${totalMTCost.toFixed(2)}<br>
+                <strong>${cheaperModel} Model is cheaper by €${Math.abs(diff).toFixed(2)}</strong>`;
+
+            // Create charts
+            createCorrelationChart(cycleTimes);
+            createCostChart(odCosts, mtCosts);
+
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+    
+</body>
+</html>
