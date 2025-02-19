@@ -155,21 +155,31 @@
             margin-bottom: 0;
         }
 
-        button {
-            background: var(--secondary-gradient);
-            color: #fff;
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
+        button.analyze-btn {
+            display: block;
             width: 100%;
+            max-width: 200px;
+            margin: 2rem auto;
+            padding: 0.8rem 1.5rem;
+            background: var(--secondary-gradient);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
             font-size: 1rem;
+            cursor: pointer;
             transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button.analyze-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         button {
+            margin-top: 2rem;
             background: var(--secondary-gradient);
-            color: #fff;
+            color: #afafed;
             padding: 0.8rem 1.5rem;
             border: none;
             border-radius: var(--border-radius);
@@ -177,7 +187,13 @@
             width: 100%;
             font-size: 1rem;
             transition: opacity 0.2s ease-in-out;
+            display: block; /* Ensure button is displayed as block */
+            opacity: 1; /* Ensure full opacity */
+            position: relative; /* Enable positioning context */
+            z-index: 10; /* Ensure button is above other elements */
         }
+
+        
         button:hover {
             opacity: 0.9;
         }
@@ -285,7 +301,7 @@
             </div>
         </div>
 
-        <button onclick="calculateMetrics()">Analyze</button>
+        <button class="analyze-btn" onclick="calculateMetrics()">Analyze</button>
 
         <div id="tooltip" class="tooltip"></div>
         <div id="results" class="results">
@@ -531,7 +547,7 @@
             createCorrelationChart(cycleTimes);
             createCostChart(odCosts, mtCosts);
 
-            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').classList.add('show');
         }
     </script>
     
